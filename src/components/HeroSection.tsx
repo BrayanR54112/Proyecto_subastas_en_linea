@@ -1,6 +1,6 @@
 import { Play } from 'lucide-react';
 import { Button } from './ui/button';
-import heroImage from 'figma:asset/363632de4d494eba9450d193adcdeec143279f4f.png';
+// import heroImage from 'src/assets/363632de4d494eba9450d193adcdeec143279f4f.png';
 
 export function HeroSection() {
   return (
@@ -10,7 +10,7 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/90 to-transparent z-10" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black z-10" />
         <img 
-          src={heroImage}
+          src="/hero.png"
           alt="Auction Commerce"
           className="w-full h-full object-cover opacity-40"
         />
@@ -43,7 +43,7 @@ export function HeroSection() {
             <Button className="bg-red-600 hover:bg-red-700 px-8 py-6">
               Explorar Subastas
             </Button>
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 px-8 py-6">
+            <Button variant="outline" className="bg-white text-black border-white hover:bg-black hover:text-white hover:border-black transition-all duration-300 px-8 py-6">
               <Play className="w-4 h-4 mr-2" />
               Ver Tutorial
             </Button>
