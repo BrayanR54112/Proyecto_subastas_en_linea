@@ -56,6 +56,7 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
   useEffect(() => {
     if (!auctionId) return;
 
+    setLoading(true); // Asegurarse de mostrar 'cargando' si el ID cambia
     const auctionRef = doc(db, 'subastas', auctionId);
     
     // onSnapshot para el producto principal
@@ -66,9 +67,7 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
         // Convertir Timestamp a Date
         const endTimeDate = data.endTime && data.endTime.toDate ? data.endTime.toDate() : new Date();
         const createdDate = data.createdAt && data.createdAt.toDate ? data.createdAt.toDate() : new Date();
-        // --- ¡AQUÍ ESTÁ LA SOLUCIÓN! ---
-        // Construimos el objeto 'Product' manualmente
-        // Esto satisface a TypeScript Y calcula 'timeLeft'
+
         const productData: Product = {
           id: docSnap.id,
           title: data.title,
@@ -84,8 +83,7 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
           sellerName: data.sellerName,
           status: data.status,
           isLive: data.isLive,
-          createdAt: createdDate,
-          // 'createdAt' no está en tu tipo 'Product', así que lo omitimos
+          createdAt: createdDate, // <-- ¡AQUÍ ESTÁ LA PROPIEDAD QUE FALTABA!
         };
 
         setProduct(productData);
@@ -94,6 +92,10 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
         setError("No se encontró la subasta.");
         setLoading(false);
       }
+    }, (err) => {
+      console.error("Error en listener de producto:", err);
+      setError("Error al cargar la subasta.");
+      setLoading(false);
     });
 
     // onSnapshot para la sub-colección de pujas
@@ -106,6 +108,9 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
         bidsData.push({ id: doc.id, ...doc.data() } as Bid);
       });
       setBids(bidsData);
+    }, (err) => {
+      console.error("Error en listener de pujas:", err);
+      // No seteamos error principal aquí, las pujas pueden fallar pero el producto no
     });
 
     // Limpiar ambos listeners
@@ -117,7 +122,7 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
 
   // --- 2. USEEFFECT: TEMPORIZADOR (COUNTDOWN) ---
   useEffect(() => {
-    if (!product || isEnded) return;
+    if (!product || isEnded) return; // Si no hay producto o ya terminó, no hacer nada
 
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
@@ -203,6 +208,12 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
     return <div className="text-white text-center p-10">No hay datos de la subasta.</div>;
   }
 
+  // --- LÓGICA DE BARRA DE TIEMPO ---
+  // Calculamos la duración total en segundos
+  const totalDurationInSeconds = (product.endTime.getTime() - product.createdAt.getTime()) / 1000;
+  // Calculamos el porcentaje restante
+  const timePercentage = (timeLeft / totalDurationInSeconds) * 100;
+
   // --- Renderizado de Subasta Finalizada ---
   const lastBidderUser = bids.length > 0 ? (bids[0].userId === user?.id ? 'Tú' : bids[0].userName) : 'Nadie';
   
@@ -243,7 +254,8 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
     <div className="grid lg:grid-cols-3 gap-8">
       {/* Main Content */}
       <div className="lg:col-span-2 space-y-6">
-        {/* Product Image */}
+        {/* ... (Imagen, Info, Historial de pujas... todo se queda igual) ... */}
+         {/* Product Image */}
         <div className="bg-zinc-900 border border-white/5 rounded-xl overflow-hidden">
           <div className="relative">
             <Badge className="absolute top-4 left-4 bg-red-600 hover:bg-red-700 flex items-center gap-2 z-10">
@@ -271,10 +283,6 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
             </div>
             <div>
               <p className="text-white text-sm">{product.sellerName}</p>
-              {/* <div className="flex items-center gap-1">
-                <span className="text-yellow-500 text-sm">★</span>
-                <span className="text-white/60 text-sm">{product.sellerRating}</span>
-              </div> */}
             </div>
           </div>
         </div>
@@ -318,6 +326,7 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
 
       {/* Sidebar */}
       <div className="space-y-6">
+        {/* ... (Timer, Current Bid... todo se queda igual) ... */}
         {/* Timer */}
         <div className="bg-zinc-900 border border-white/5 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-4">
@@ -328,7 +337,7 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
           <div className="w-full bg-white/5 rounded-full h-2">
             <div
               className="bg-red-600 h-2 rounded-full transition-all duration-1000"
-              style={{ width: `${(timeLeft / (product.endTime.getTime() - (product.createdAt?.getTime() || product.endTime.getTime()))) * 100}%` }}
+              style={{ width: `${timePercentage}%` }}
             />
           </div>
         </div>
@@ -351,6 +360,7 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
             <span>{product.bids} ofertas</span>
           </div>
         </div>
+
 
         {/* Place Bid */}
         <div className="bg-zinc-900 border border-white/5 rounded-xl p-6">
@@ -380,29 +390,30 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
               Pujar Ahora
             </Button>
 
+            {/* --- ¡SECCIÓN CORREGIDA! --- */}
             <div className="flex gap-2">
               <Button
                 onClick={() => setBidAmount((product.currentBid + 100).toString())}
-                variant="outline"
-                className="flex-1 border-white/10 text-white hover:bg-white/5 text-sm"
+                // 1. Quitamos variant="outline"
+                // 2. Añadimos un fondo oscuro y nos aseguramos de que el 'border' exista
+                className="flex-1 border border-white/10 text-white hover:bg-white/5 text-sm bg-black/50"
               >
                 +$100
               </Button>
               <Button
                 onClick={() => setBidAmount((product.currentBid + 500).toString())}
-                variant="outline"
-                className="flex-1 border-white/10 text-white hover:bg-white/5 text-sm"
+                className="flex-1 border border-white/10 text-white hover:bg-white/5 text-sm bg-black/50"
               >
                 +$500
               </Button>
               <Button
                 onClick={() => setBidAmount((product.currentBid + 1000).toString())}
-                variant="outline"
-                className="flex-1 border-white/10 text-white hover:bg-white/5 text-sm"
+                className="flex-1 border border-white/10 text-white hover:bg-white/5 text-sm bg-black/50"
               >
                 +$1K
               </Button>
             </div>
+            {/* --- FIN DE LA SECCIÓN CORREGIDA --- */}
           </div>
         </div>
 
