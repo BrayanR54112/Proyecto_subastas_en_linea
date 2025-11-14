@@ -1,30 +1,23 @@
 import { useState, useEffect } from 'react';
 import { AuctionCard } from './AuctionCard';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs'; // Asumo que tienes estos imports
-import { ArrowRight } from 'lucide-react'; // Asumo que tienes este import
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs'; 
+import { ArrowRight } from 'lucide-react'; 
 import { db } from '../lib/firebaseConfig'; 
-import { collection, onSnapshot, query, where, Timestamp } from 'firebase/firestore'; // Importa Timestamp
+import { collection, onSnapshot, query, where, Timestamp } from 'firebase/firestore'; 
 import { Product } from '../lib/mockData'; 
 
-// --- ¡NUEVA FUNCIÓN! ---
-// Helper para calcular el tiempo restante
 const formatTimeLeft = (endTime: Date): string => {
   const now = new Date().getTime();
-  const difference = (endTime.getTime() - now) / 1000; // en segundos
-
+  const difference = (endTime.getTime() - now) / 1000; 
   if (difference <= 0) return "Finalizada";
-  
   const hours = Math.floor(difference / 3600);
   const minutes = Math.floor((difference % 3600) / 60);
-
   if (hours > 23) return `${Math.floor(hours / 24)}d ${hours % 24}h`;
   if (hours > 0) return `${hours}h ${minutes}m`;
   if (minutes > 0) return `${minutes}m`;
   return `${Math.floor(difference)}s`;
 };
 
-
-// Esta prop viene de App.tsx (pasando por DashboardMain) para manejar el clic
 export function LiveAuctions({ onViewAuction }: { onViewAuction: (id: string) => void }) {
   const [auctions, setAuctions] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,14 +31,9 @@ export function LiveAuctions({ onViewAuction }: { onViewAuction: (id: string) =>
       const auctionData: Product[] = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
-        
-        // Convertir Firestore Timestamp a JS Date
         const endTimeDate = data.endTime && data.endTime.toDate ? data.endTime.toDate() : new Date();
         const createdDate = data.createdAt && data.createdAt.toDate ? data.createdAt.toDate() : new Date();
 
-        // --- ¡AQUÍ ESTÁ LA SOLUCIÓN! ---
-        // Construimos el objeto 'Product' manualmente
-        // Esto satisface a TypeScript Y calcula 'timeLeft'
         const product: Product = {
           id: doc.id,
           title: data.title,
@@ -56,16 +44,13 @@ export function LiveAuctions({ onViewAuction }: { onViewAuction: (id: string) =>
           startingBid: data.startingBid,
           bids: data.bids,
           endTime: endTimeDate,
-          timeLeft: formatTimeLeft(endTimeDate), // <-- Calculamos timeLeft
+          timeLeft: formatTimeLeft(endTimeDate),
           sellerId: data.sellerId,
           sellerName: data.sellerName,
           status: data.status,
           isLive: data.isLive,
           createdAt: createdDate,
-          // Nota: 'createdAt' y 'condition' (de UploadProduct) 
-          // no están en tu tipo 'Product', así que los omitimos.
         };
-
         auctionData.push(product);
       });
       setAuctions(auctionData);
@@ -74,7 +59,6 @@ export function LiveAuctions({ onViewAuction }: { onViewAuction: (id: string) =>
       console.error("Error cargando subastas:", error);
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []); 
 
@@ -91,10 +75,15 @@ export function LiveAuctions({ onViewAuction }: { onViewAuction: (id: string) =>
   return (
     <section className="bg-black py-20">
       <div className="container mx-auto px-4 lg:px-8">
-
-        {/* Tabs */}
         <Tabs defaultValue="all" className="mb-8">
           <TabsList className="bg-white/5 border border-white/10">
+            {/* --- ¡CORRECCIÓN AQUÍ! --- 
+              Simplificamos las clases. 
+              Le damos un color base al texto (text-white/60).
+              Y cuando esté activo (data-[state=active]), el texto será negro.
+              El fondo blanco de la pestaña activa lo maneja TabsTrigger por defecto.
+              Nos aseguramos de que no haya un padding extra que oculte el texto.
+            */}
             <TabsTrigger value="all" className="text-white/60 data-[state=active]:text-black">Todas</TabsTrigger>
             <TabsTrigger value="watches" className="text-white/60 data-[state=active]:text-black">Relojes</TabsTrigger>
             <TabsTrigger value="vehicles" className="text-white/60 data-[state=active]:text-black">Vehículos</TabsTrigger>
@@ -102,11 +91,9 @@ export function LiveAuctions({ onViewAuction }: { onViewAuction: (id: string) =>
             <TabsTrigger value="collectibles" className="text-white/60 data-[state=active]:text-black">Coleccionables</TabsTrigger>
           </TabsList>
 
-          {/* --- CONTENIDO DE TABS (AHORA DINÁMICO) --- */}
           <TabsContent value="all" className="mt-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {auctions.map((auction) => (
-                // Pasamos la función 'onViewAuction' a tu AuctionCard
                 <AuctionCard 
                   key={auction.id} 
                   {...auction} 
