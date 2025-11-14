@@ -1,13 +1,72 @@
-import { teamMembers } from '../../lib/mockData';
+import { useState, useEffect } from 'react';
 import { Award, Users, Target, TrendingUp } from 'lucide-react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
+// --- ¡IMPORTS DE FIREBASE! ---
+import { db } from '../../lib/firebaseConfig';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+
+// --- DATOS DEL EQUIPO REAL ---
+// (Ya no importamos 'teamMembers' de mockData)
+const teamMembers = [
+  {
+    id: '1',
+    name: 'Brayan Rivera',
+    position: 'Desarrollador Full-Stack',
+    image: 'https://placehold.co/400x400/ef4444/white?text=BR', // Placeholder
+    bio: 'Apasionado por crear experiencias de usuario fluidas y tecnología en tiempo real.'
+  },
+  {
+    id: '2',
+    name: 'Michael',
+    position: 'Diseñador UI/UX',
+    image: 'https://placehold.co/400x400/3b82f6/white?text=M', // Placeholder
+    bio: 'Enfocado en diseñar interfaces intuitivas y atractivas para el usuario.'
+  },
+  {
+    id: '3',
+    name: 'Sara',
+    position: 'Gerente de Proyecto',
+    image: 'https://placehold.co/400x400/22c55e/white?text=S', // Placeholder
+    bio: 'Asegurando que el proyecto cumpla con las metas y la visión del equipo.'
+  }
+];
 
 export function AboutPage() {
+  
+  // --- ¡ESTADO DINÁMICO PARA STATS! ---
+  const [dynamicStats, setDynamicStats] = useState({
+    activeUsers: 0,
+    completedAuctions: 0,
+  });
+
+  // --- ¡USEEFFECT PARA CARGAR STATS! ---
+  useEffect(() => {
+    // 1. Contar Usuarios Registrados (desde la colección 'users')
+    const usersRef = collection(db, 'users');
+    const unsubUsers = onSnapshot(usersRef, (snapshot) => {
+      setDynamicStats(prev => ({ ...prev, activeUsers: snapshot.size }));
+    });
+
+    // 2. Contar Subastas Completadas (status == 'ended')
+    const auctionsRef = collection(db, 'subastas');
+    const completedQuery = query(auctionsRef, where("status", "==", "ended"));
+    const unsubCompleted = onSnapshot(completedQuery, (snapshot) => {
+      setDynamicStats(prev => ({ ...prev, completedAuctions: snapshot.size }));
+    });
+
+    // Limpiamos los listeners
+    return () => {
+      unsubUsers();
+      unsubCompleted();
+    };
+  }, []); // Se ejecuta solo una vez
+
+  // --- ARRAY DE STATS (AHORA MIXTO) ---
   const stats = [
-    { icon: Users, label: 'Usuarios Activos', value: '50K+' },
-    { icon: Award, label: 'Subastas Completadas', value: '125K+' },
-    { icon: Target, label: 'Tasa de Satisfacción', value: '98%' },
-    { icon: TrendingUp, label: 'Crecimiento Anual', value: '+145%' }
+    { icon: Users, label: 'Usuarios Registrados', value: `${dynamicStats.activeUsers.toLocaleString('es-CO')}` },
+    { icon: Award, label: 'Subastas Completadas', value: `${dynamicStats.completedAuctions.toLocaleString('es-CO')}` },
+    { icon: Target, label: 'Tasa de Satisfacción', value: '98%' }, // Quemado
+    { icon: TrendingUp, label: 'Crecimiento Anual', value: '+145%' } // Quemado
   ];
 
   return (
@@ -30,7 +89,7 @@ export function AboutPage() {
           </p>
         </div>
 
-        {/* Stats */}
+        {/* Stats (AHORA CON DATOS REALES) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
           {stats.map((stat) => {
             const Icon = stat.icon;
@@ -39,7 +98,7 @@ export function AboutPage() {
                 <div className="w-12 h-12 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Icon className="w-6 h-6 text-red-600" />
                 </div>
-                <div className="text-red-600 mb-2">{stat.value}</div>
+                <div className="text-red-600 text-2xl font-bold mb-2">{stat.value}</div>
                 <p className="text-white/60 text-sm">{stat.label}</p>
               </div>
             );
@@ -66,18 +125,18 @@ export function AboutPage() {
           </div>
         </div>
 
-        {/* Team */}
+        {/* Team (AHORA CON TU EQUIPO REAL) */}
         <div className="text-center mb-12">
           <span className="text-red-600 tracking-widest uppercase text-sm mb-4 block">
             Nuestro Equipo
           </span>
-          <h3 className="text-white mb-4">Conoce a los Expertos</h3>
+          <h3 className="text-white mb-4">Conoce a los Creadores</h3>
           <p className="text-white/60 max-w-2xl mx-auto">
             Un equipo apasionado dedicado a crear la mejor experiencia de subastas
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8"> {/* Ajustado a 3 columnas */}
           {teamMembers.map((member) => (
             <div key={member.id} className="bg-zinc-900 border border-white/5 rounded-xl overflow-hidden hover:border-red-600/50 transition-all group">
               <div className="aspect-square overflow-hidden bg-zinc-800">
