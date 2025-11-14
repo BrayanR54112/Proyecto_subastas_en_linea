@@ -1,0 +1,23 @@
+{
+  "pages": {
+    "/dashboard/page": [
+      "static/chunks/87941_next_dist_ef86acf8._.js",
+      "static/chunks/Desktop_quiendamas2_Front-quien-da-mas_src_app_favicon_ico_mjs_06ad6f38._.js",
+      "static/chunks/Desktop_quiendamas2_Front-quien-da-mas_src_app_globals_8b943b0e.css",
+      "static/chunks/Desktop_quiendamas2_Front-quien-da-mas_5aea4911._.js",
+      "static/chunks/Desktop_quiendamas2_Front-quien-da-mas_src_app_layout_tsx_f7fa84d3._.js",
+      "static/chunks/87941_next_dist_client_components_builtin_global-error_6172dd98.js",
+      "static/chunks/Desktop_quiendamas2_Front-quien-da-mas_src_45856e7b._.js",
+      "static/chunks/Desktop_quiendamas2_Front-quien-da-mas_src_app_dashboard_page_tsx_6172dd98._.js",
+      "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_db99a8df._.js",
+      "static/chunks/87941_next_dist_compiled_react-dom_c36b51d8._.js",
+      "static/chunks/87941_next_dist_compiled_next-devtools_index_ab470ac3.js",
+      "static/chunks/87941_next_dist_compiled_445b3eb9._.js",
+      "static/chunks/87941_next_dist_client_538afed9._.js",
+      "static/chunks/87941_next_dist_634cb692._.js",
+      "static/chunks/87941_@swc_helpers_cjs_2c573011._.js",
+      "static/chunks/Desktop_quiendamas2_Front-quien-da-mas_a0ff3932._.js",
+      "static/chunks/turbopack-Desktop_quiendamas2_Front-quien-da-mas_9dfdde6f._.js"
+    ]
+  }
+}

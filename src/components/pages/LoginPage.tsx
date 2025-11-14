@@ -1,98 +1,118 @@
 import { useState } from 'react';
+import { useAuth } from '../../lib/AuthContext';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../../lib/AuthContext';
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState(''); // Solo para registro
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { login, register } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(email, password);
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (isLogin) {
+        await login(email, password);
+        // El AuthContext se encargará de redirigir
+      } else {
+        await register(name, email, password);
+        // El AuthContext se encargará de redirigir
+      }
+    } catch (err: any) {
+      // Manejo de errores de Firebase
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+        setError('Correo o contraseña incorrectos.');
+      } else if (err.code === 'auth/email-already-in-use') {
+        setError('Ese correo ya está registrado.');
+      } else if (err.code === 'auth/weak-password') {
+        setError('La contraseña debe tener al menos 6 caracteres.');
+      } else {
+        setError('Ocurrió un error. Inténtalo de nuevo.');
+      }
+    }
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
+    <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-zinc-900 border border-white/5 rounded-xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-red-600 tracking-wider mb-4">¿QUIÉN DA MÁS?</h1>
-          <h2 className="text-white mb-2">Bienvenido de Nuevo</h2>
-          <p className="text-white/60">Inicia sesión para acceder a tu cuenta</p>
+          <h1 className="text-red-600 tracking-wider text-2xl mb-2">
+            ¿QUIÉN DA MÁS?
+          </h1>
+          <h3 className="text-white text-xl">
+            {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
+          </h3>
         </div>
 
-        {/* Login Form */}
-        <div className="bg-zinc-900 border border-white/5 rounded-xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {!isLogin && (
             <div>
-              <label className="text-white/80 text-sm mb-2 block">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-                <Input
-                  type="email"
-                  placeholder="tu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="bg-black/50 border-white/10 text-white pl-10"
-                />
-              </div>
+              <label className="text-white/80 text-sm mb-2 block">Nombre</label>
+              <Input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Tu nombre completo"
+                required
+                className="bg-black/50 border-white/10 text-white"
+              />
             </div>
-
-            <div>
-              <label className="text-white/80 text-sm mb-2 block">Contraseña</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-                <Input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="bg-black/50 border-white/10 text-white pl-10 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 text-white/60 cursor-pointer">
-                <input type="checkbox" className="rounded border-white/10" />
-                Recordarme
-              </label>
-              <a href="#" className="text-red-600 hover:text-red-500">
-                ¿Olvidaste tu contraseña?
-              </a>
-            </div>
-
-            <Button type="submit" className="w-full bg-red-600 hover:bg-red-700">
-              Iniciar Sesión
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center text-sm text-white/60">
-            ¿No tienes cuenta?{' '}
-            <a href="#" className="text-red-600 hover:text-red-500">
-              Regístrate aquí
-            </a>
+          )}
+          <div>
+            <label className="text-white/80 text-sm mb-2 block">Correo Electrónico</label>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@correo.com"
+              required
+              className="bg-black/50 border-white/10 text-white"
+            />
           </div>
-        </div>
+          <div>
+            <label className="text-white/80 text-sm mb-2 block">Contraseña</label>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Tu contraseña"
+              required
+              className="bg-black/50 border-white/10 text-white"
+            />
+          </div>
 
-        {/* Demo Info */}
-        <div className="mt-6 bg-red-600/10 border border-red-600/20 rounded-lg p-4">
-          <p className="text-red-400 text-sm text-center">
-            💡 Demo: Ingresa cualquier email y contraseña para acceder
-          </p>
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-red-600 hover:bg-red-700 py-6 text-lg"
+          >
+            {loading ? 'Cargando...' : (isLogin ? 'Entrar' : 'Registrarse')}
+          </Button>
+        </form>
+
+        <div className="text-center mt-6">
+          <button
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError(null);
+            }}
+            className="text-white/60 hover:text-red-600 transition-colors"
+          >
+            {isLogin
+              ? '¿No tienes cuenta? Regístrate'
+              : '¿Ya tienes cuenta? Inicia Sesión'}
+          </button>
         </div>
       </div>
     </div>

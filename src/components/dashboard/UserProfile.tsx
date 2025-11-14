@@ -1,29 +1,99 @@
+import { useState, useEffect } from 'react'; // ¡Importante!
 import { Star, Package, Clock, Award, Edit } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
-import { mockProducts } from '../../lib/mockData';
+// --- 1. Importamos Firebase ---
+import { db } from '../../lib/firebaseConfig';
+import { collection, query, where, onSnapshot, Timestamp } from 'firebase/firestore';
+import { Product } from '../../lib/mockData'; // Importamos el TIPO, no los datos
+// --- (Quitamos 'mockProducts') ---
 import { Button } from '../ui/button';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 
+// Helper para calcular el tiempo restante (¡lo necesitamos!)
+const formatTimeLeft = (endTime: Date): string => {
+  const now = new Date().getTime();
+  const difference = (endTime.getTime() - now) / 1000;
+  if (difference <= 0) return "Finalizada";
+  const hours = Math.floor(difference / 3600);
+  if (hours > 23) return `${Math.floor(hours / 24)}d ${hours % 24}h`;
+  if (hours > 0) return `${hours}h ${Math.floor((difference % 3600) / 60)}m`;
+  return `${Math.floor((difference % 3600) / 60)}m`;
+};
+
 export function UserProfile() {
-  const { user } = useAuth();
+  const { user } = useAuth(); // ¡Esto está perfecto!
 
-  const userProducts = mockProducts.slice(0, 3);
-  const upcomingProducts = mockProducts.slice(3, 5);
+  // --- 2. Creamos estados separados para los productos ---
+  const [activeProducts, setActiveProducts] = useState<Product[]>([]);
+  const [upcomingProducts, setUpcomingProducts] = useState<Product[]>([]);
 
+  // --- 3. useEffect para cargar los productos del usuario ---
+  useEffect(() => {
+    // Si no hay usuario, no hay nada que cargar
+    if (!user) return;
+
+    // Creamos una consulta a Firestore:
+    // "Dame todas las subastas donde el 'sellerId' sea igual al ID del usuario actual"
+    const auctionsRef = collection(db, 'subastas');
+    const q = query(auctionsRef, where("sellerId", "==", user.id));
+
+    // Nos suscribimos en tiempo real
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const allProducts: Product[] = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const endTimeDate = data.endTime.toDate();
+        
+        // Construimos el objeto Product
+        allProducts.push({
+          id: doc.id,
+          title: data.title,
+          description: data.description,
+          image: data.image,
+          category: data.category,
+          currentBid: data.currentBid,
+          startingBid: data.startingBid,
+          bids: data.bids,
+          endTime: endTimeDate,
+          createdAt: data.createdAt.toDate(),
+          timeLeft: formatTimeLeft(endTimeDate),
+          sellerId: data.sellerId,
+          sellerName: data.sellerName,
+          status: data.status,
+          isLive: data.isLive,
+        });
+      });
+      
+      // --- ¡CAMBIO IMPORTANTE! ---
+      // Filtramos y actualizamos los estados separados
+      setActiveProducts(allProducts.filter(p => p.status === 'active'));
+      setUpcomingProducts(allProducts.filter(p => p.status === 'upcoming'));
+    });
+
+    // Limpiamos el listener al salir
+    return () => unsubscribe();
+
+  }, [user]); // Este efecto se ejecuta cada vez que el 'user' cambie
+
+  if (!user) {
+    return <div className="text-white">Cargando perfil...</div>
+  }
+
+  // --- 4. Renderizado (sin cambios, ahora usa datos reales) ---
   return (
     <div className="space-y-8">
       {/* Profile Header */}
       <div className="bg-zinc-900 border border-white/5 rounded-xl p-8">
         <div className="flex flex-col md:flex-row gap-6 items-start">
           <div className="w-32 h-32 rounded-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white flex-shrink-0">
-            <span className="text-5xl">{user?.name.charAt(0)}</span>
+            <span className="text-5xl">{user.name.charAt(0)}</span>
           </div>
           
           <div className="flex-1">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-white mb-2">{user?.name}</h3>
-                <p className="text-white/60">{user?.email}</p>
+                <h3 className="text-white mb-2">{user.name}</h3>
+                <p className="text-white/60">{user.email}</p>
               </div>
               <Button className="bg-red-600 hover:bg-red-700">
                 <Edit className="w-4 h-4 mr-2" />
@@ -38,50 +108,51 @@ export function UserProfile() {
                   <Star
                     key={i}
                     className={`w-5 h-5 ${
-                      i < Math.floor(user?.rating || 0)
+                      i < Math.floor(user.rating || 0)
                         ? 'fill-yellow-500 text-yellow-500'
                         : 'text-white/20'
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-white">{user?.rating}</span>
-              <span className="text-white/40">({user?.totalAuctions} valoraciones)</span>
+              <span className="text-white">{user.rating}</span>
+              <span className="text-white/40">({user.totalAuctions} valoraciones)</span>
             </div>
 
-            {/* Stats */}
+            {/* Stats (AHORA USANDO LOS NUEVOS ESTADOS) */}
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-black/50 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Package className="w-4 h-4 text-red-600" />
                   <span className="text-white/60 text-sm">Subastas Activas</span>
                 </div>
-                <div className="text-white">{user?.activeSales}</div>
+                {/* Usamos el length del array real */}
+                <div className="text-white">{activeProducts.length}</div>
               </div>
               <div className="bg-black/50 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Clock className="w-4 h-4 text-blue-600" />
                   <span className="text-white/60 text-sm">Próximas</span>
                 </div>
-                <div className="text-white">{user?.upcomingSales}</div>
+                <div className="text-white">{upcomingProducts.length}</div>
               </div>
               <div className="bg-black/50 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Award className="w-4 h-4 text-yellow-600" />
                   <span className="text-white/60 text-sm">Total Subastas</span>
                 </div>
-                <div className="text-white">{user?.totalAuctions}</div>
+                <div className="text-white">{user.totalAuctions}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Active Auctions */}
+      {/* Active Auctions (AHORA USANDO 'activeProducts') */}
       <div>
         <h3 className="text-white mb-6">Productos que Estoy Subastando</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {userProducts.map((product) => (
+          {activeProducts.map((product) => (
             <div key={product.id} className="bg-zinc-900 border border-white/5 rounded-xl overflow-hidden">
               <div className="aspect-[4/3] bg-zinc-800">
                 <ImageWithFallback
@@ -105,8 +176,8 @@ export function UserProfile() {
           ))}
         </div>
       </div>
-
-      {/* Upcoming Auctions */}
+      
+      {/* Upcoming Auctions (AHORA USANDO 'upcomingProducts') */}
       <div>
         <h3 className="text-white mb-6">Próximas Subastas</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -128,7 +199,7 @@ export function UserProfile() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-white/40" />
-                    <span className="text-white/60 text-sm">Inicia en 2 días</span>
+                    <span className="text-white/60 text-sm">{product.timeLeft}</span>
                   </div>
                 </div>
               </div>
@@ -137,32 +208,6 @@ export function UserProfile() {
         </div>
       </div>
 
-      {/* Performance Summary */}
-      <div className="bg-zinc-900 border border-white/5 rounded-xl p-6">
-        <h3 className="text-white mb-6">Resumen de Rendimiento</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div>
-            <p className="text-white/50 text-sm mb-2">Tasa de Éxito</p>
-            <p className="text-white text-2xl mb-1">87%</p>
-            <p className="text-green-500 text-sm">+5% este mes</p>
-          </div>
-          <div>
-            <p className="text-white/50 text-sm mb-2">Tiempo Promedio</p>
-            <p className="text-white text-2xl mb-1">4.2h</p>
-            <p className="text-blue-500 text-sm">Por subasta</p>
-          </div>
-          <div>
-            <p className="text-white/50 text-sm mb-2">Valor Total Vendido</p>
-            <p className="text-white text-2xl mb-1">$145K</p>
-            <p className="text-yellow-500 text-sm">Último año</p>
-          </div>
-          <div>
-            <p className="text-white/50 text-sm mb-2">Calificación</p>
-            <p className="text-white text-2xl mb-1">{user?.rating}/5.0</p>
-            <p className="text-purple-500 text-sm">Excelente</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

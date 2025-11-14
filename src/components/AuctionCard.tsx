@@ -14,10 +14,12 @@ interface AuctionCardProps {
   category: string;
   featured?: boolean;
   isLive?: boolean;
-  onViewLive?: () => void;
+  // --- ¡CAMBIO 1: El nombre y tipo de la prop! ---
+  onViewAuction: (id: string) => void;
 }
 
 export function AuctionCard({ 
+  id, // <-- Necesitamos el ID
   title, 
   image, 
   currentBid, 
@@ -27,12 +29,18 @@ export function AuctionCard({
   category,
   featured = false,
   isLive = false,
-  onViewLive
+  onViewAuction // --- ¡CAMBIO 2: Recibimos la prop correcta! ---
 }: AuctionCardProps) {
   const percentIncrease = ((currentBid - startingBid) / startingBid * 100).toFixed(0);
 
   return (
-    <div className="group relative bg-zinc-900 rounded-xl overflow-hidden border border-white/5 hover:border-red-600/50 transition-all duration-300">
+    // ¡OJO! He movido el onClick del botón a todo el div
+    // para que toda la tarjeta sea clickeable.
+    // Si prefieres que sea solo el botón, mueve el onClick de abajo al <Button>.
+    <div 
+      onClick={() => onViewAuction(id)} // --- ¡CAMBIO 3: Llamamos a la función con el ID! ---
+      className="group relative bg-zinc-900 rounded-xl overflow-hidden border border-white/5 hover:border-red-600/50 transition-all duration-300 cursor-pointer"
+    >
       {/* Image */}
       <div className="relative aspect-[4/3] overflow-hidden bg-zinc-800">
         <ImageWithFallback
@@ -98,9 +106,10 @@ export function AuctionCard({
         </div>
 
         {/* Action Button */}
+        {/* El botón ahora es solo visual, el 'onClick' está en el div principal */}
         <Button 
-          onClick={onViewLive}
-          className="w-full bg-red-600 hover:bg-red-700"
+          tabIndex={-1} // Para que no sea "focuseable" si el div ya es clickeable
+          className="w-full bg-red-600 hover:bg-red-700 pointer-events-none"
         >
           {isLive ? 'Ver Subasta en Vivo' : 'Hacer Oferta'}
         </Button>

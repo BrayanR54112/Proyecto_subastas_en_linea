@@ -1,13 +1,17 @@
-import { categories, mockProducts } from '../../lib/mockData';
+import React from 'react';
+// --- ¡CAMBIO AQUÍ! ---
+// Ya no necesitamos mockProducts, importamos el componente real
+import { LiveAuctions } from '../LiveAuctions';
+import { categories } from '../../lib/mockData';
 import { AuctionCard } from '../AuctionCard';
 import { TrendingUp, Clock, DollarSign, Users } from 'lucide-react';
 
 interface DashboardMainProps {
-  onViewLive?: () => void;
+  onViewLive: (auctionId: string) => void;
 }
 
 export function DashboardMain({ onViewLive }: DashboardMainProps) {
-  const liveAuctions = mockProducts.filter(p => p.isLive);
+  // const liveAuctions = mockProducts.filter(p => p.isLive); // <-- Eliminamos esto
   
   const stats = [
     { icon: TrendingUp, label: 'Ofertas Activas', value: '3', color: 'text-green-500' },
@@ -53,7 +57,14 @@ export function DashboardMain({ onViewLive }: DashboardMainProps) {
         </div>
       </div>
 
-      {/* Live Auctions */}
+      {/* --- ¡SECCIÓN PRINCIPAL ACTUALIZADA! --- */}
+      {/* Ahora, en lugar de que DashboardMain cree su propia lista "mock",
+        simplemente le decimos al componente 'LiveAuctions' (que ya está
+        conectado a Firebase) que se renderice aquí.
+        
+        Le pasamos la función 'onViewLive' (que viene de App.tsx) 
+        a la prop 'onViewAuction' (que 'LiveAuctions' espera).
+      */}
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -65,22 +76,17 @@ export function DashboardMain({ onViewLive }: DashboardMainProps) {
             <span className="text-red-600 text-sm">EN VIVO</span>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {liveAuctions.map((auction) => (
-            <AuctionCard key={auction.id} {...auction} onViewLive={onViewLive} />
-          ))}
-        </div>
+        
+        {/* Aquí renderizamos el componente REAL conectado a Firebase */}
+        <LiveAuctions onViewAuction={onViewLive} />
       </div>
 
-      {/* All Auctions */}
-      <div>
-        <h3 className="text-white mb-6">Todas las Subastas</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockProducts.map((auction) => (
-            <AuctionCard key={auction.id} {...auction} onViewLive={onViewLive} />
-          ))}
-        </div>
-      </div>
+      {/* He eliminado la sección "All Auctions" que tenías 
+        porque usaba mockProducts. Si quieres tener "Todas las subastas" 
+        (no solo las activas), deberíamos modificar la consulta 
+        de Firebase dentro de 'LiveAuctions.tsx' y pasarle un filtro.
+        Por ahora, esto te deja 100% funcional con datos en vivo.
+      */}
     </div>
   );
 }

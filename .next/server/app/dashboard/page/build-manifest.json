@@ -1,0 +1,21 @@
+{
+  "devFiles": [],
+  "ampDevFiles": [],
+  "polyfillFiles": [
+    "static/chunks/87941_next_dist_build_polyfills_polyfill-nomodule.js"
+  ],
+  "lowPriorityFiles": [],
+  "rootMainFiles": [
+    "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_db99a8df._.js",
+    "static/chunks/87941_next_dist_compiled_react-dom_c36b51d8._.js",
+    "static/chunks/87941_next_dist_compiled_next-devtools_index_ab470ac3.js",
+    "static/chunks/87941_next_dist_compiled_445b3eb9._.js",
+    "static/chunks/87941_next_dist_client_538afed9._.js",
+    "static/chunks/87941_next_dist_634cb692._.js",
+    "static/chunks/87941_@swc_helpers_cjs_2c573011._.js",
+    "static/chunks/Desktop_quiendamas2_Front-quien-da-mas_a0ff3932._.js",
+    "static/chunks/turbopack-Desktop_quiendamas2_Front-quien-da-mas_9dfdde6f._.js"
+  ],
+  "pages": {},
+  "ampFirstPages": []
+}

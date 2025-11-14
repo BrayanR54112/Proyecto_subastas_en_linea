@@ -22,6 +22,7 @@ export interface Product {
   bids: number;
   timeLeft: string;
   endTime: Date;
+  createdAt: Date;
   sellerId: string;
   sellerName: string;
   status: 'active' | 'upcoming' | 'ended';
@@ -87,104 +88,6 @@ export const categories = [
   { id: 'furniture', name: 'Muebles', icon: '🪑', count: 187 }
 ];
 
-export const mockProducts: Product[] = [
-  {
-    id: '1',
-    title: 'Reloj Rolex Submariner Vintage 1965',
-    description: 'Reloj clásico en excelente condición, con caja original y certificado de autenticidad.',
-    image: 'https://images.unsplash.com/photo-1670177257750-9b47927f68eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
-    category: 'watches',
-    currentBid: 12500,
-    startingBid: 8000,
-    bids: 23,
-    timeLeft: '2h 34m',
-    endTime: new Date(Date.now() + 2.5 * 60 * 60 * 1000),
-    sellerId: '2',
-    sellerName: 'Carlos Martínez',
-    status: 'active',
-    isLive: true
-  },
-  {
-    id: '2',
-    title: 'Ford Mustang Clásico 1967 Restaurado',
-    description: 'Totalmente restaurado, motor V8 original, transmisión manual.',
-    image: 'https://images.unsplash.com/photo-1604940500627-d3f44d1d21c6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
-    category: 'vehicles',
-    currentBid: 65000,
-    startingBid: 45000,
-    bids: 47,
-    timeLeft: '5h 12m',
-    endTime: new Date(Date.now() + 5.2 * 60 * 60 * 1000),
-    sellerId: '3',
-    sellerName: 'Roberto Silva',
-    status: 'active',
-    isLive: true
-  },
-  {
-    id: '3',
-    title: 'Pintura Original de Artista Reconocido',
-    description: 'Óleo sobre lienzo, 120x90cm, firmado y certificado.',
-    image: 'https://images.unsplash.com/photo-1518998053901-5348d3961a04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
-    category: 'art',
-    currentBid: 8900,
-    startingBid: 5000,
-    bids: 31,
-    timeLeft: '3h 20m',
-    endTime: new Date(Date.now() + 3.3 * 60 * 60 * 1000),
-    sellerId: '4',
-    sellerName: 'Ana Rodríguez',
-    status: 'active',
-    isLive: false
-  },
-  {
-    id: '4',
-    title: 'Colección de Monedas Antiguas',
-    description: 'Set completo de monedas de plata del siglo XIX.',
-    image: 'https://images.unsplash.com/photo-1758779529327-4cbf5f8989b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
-    category: 'collectibles',
-    currentBid: 3200,
-    startingBid: 2000,
-    bids: 18,
-    timeLeft: '4h 55m',
-    endTime: new Date(Date.now() + 4.9 * 60 * 60 * 1000),
-    sellerId: '5',
-    sellerName: 'Luis Fernández',
-    status: 'active',
-    isLive: false
-  },
-  {
-    id: '5',
-    title: 'Collar de Diamantes 18K',
-    description: 'Oro blanco de 18K con diamantes naturales certificados.',
-    image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
-    category: 'jewelry',
-    currentBid: 15600,
-    startingBid: 12000,
-    bids: 25,
-    timeLeft: '6h 10m',
-    endTime: new Date(Date.now() + 6.2 * 60 * 60 * 1000),
-    sellerId: '6',
-    sellerName: 'Elena Vargas',
-    status: 'active',
-    isLive: false
-  },
-  {
-    id: '6',
-    title: 'MacBook Pro M3 Max 2024 Sellado',
-    description: 'Nuevo en caja, 16 pulgadas, 64GB RAM, 2TB SSD.',
-    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
-    category: 'electronics',
-    currentBid: 3800,
-    startingBid: 3000,
-    bids: 42,
-    timeLeft: '1h 15m',
-    endTime: new Date(Date.now() + 1.25 * 60 * 60 * 1000),
-    sellerId: '7',
-    sellerName: 'Pedro Sánchez',
-    status: 'active',
-    isLive: true
-  }
-];
 
 export const mockNotifications: Notification[] = [
   {
