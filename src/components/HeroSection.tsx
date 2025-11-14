@@ -1,8 +1,78 @@
+import { useState, useEffect } from 'react';
 import { Play } from 'lucide-react';
 import { Button } from './ui/button';
-// import heroImage from 'src/assets/363632de4d494eba9450d193adcdeec143279f4f.png';
+import { db, auth } from '../lib/firebaseConfig'; 
+import { collection, query, where, onSnapshot, Timestamp } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Para contar usuarios
 
 export function HeroSection() {
+  // ESTADO PARA STATS DINÁMICOS
+  const [stats, setStats] = useState({
+    activeAuctions: 0,
+    activeUsers: 0,
+    soldThisMonth: 0,
+  });
+
+  // usereffect para cargar los stats dinámicos desde Firestore
+  useEffect(() => {
+    // 1. Contar Subastas Activas
+    const auctionsRef = collection(db, 'subastas');
+    const activeQuery = query(auctionsRef, where("status", "==", "active"));
+    const unsubActive = onSnapshot(activeQuery, (snapshot) => {
+      setStats(prev => ({ ...prev, activeAuctions: snapshot.size }));
+    });
+
+    // 2. Contar Usuarios Registrados (desde la colección 'users' en Firestore)
+    const usersRef = collection(db, 'users');
+    const unsubUsers = onSnapshot(usersRef, (snapshot) => {
+      setStats(prev => ({ ...prev, activeUsers: snapshot.size }));
+    });
+
+    // 3. Contar Vendido este mes
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const thirtyDaysAgoTimestamp = Timestamp.fromDate(thirtyDaysAgo);
+
+    const soldQuery = query(
+      collection(db, 'subastas'),
+      where("status", "==", "ended"),
+      where("endTime", ">=", thirtyDaysAgoTimestamp) // endTime debe ser mayor o igual a hace 30 días
+    );
+
+    const unsubSold = onSnapshot(soldQuery, (snapshot) => {
+      let total = 0;
+      snapshot.forEach((doc) => {
+        total += doc.data().currentBid; // Sumamos la puja final
+      });
+      setStats(prev => ({ ...prev, soldThisMonth: total }));
+    }, (error) => {
+      // Esta consulta podría fallar si necesita un índice compuesto.
+      // Si falla, la consola de Firebase te dará un link para crearlo con un clic.
+      console.error("Error al cargar 'Vendido este mes'. Revisa si necesitas un índice compuesto en Firestore.", error);
+    });
+
+    // Limpiamos los 3 listeners al salir
+    return () => {
+      unsubActive();
+      unsubUsers();
+      unsubSold();
+    };
+  }, []); // El array vacío [] significa que esto se ejecuta 1 sola vez
+
+  // --- Función para formatear los números ---
+  const formatStat = (num: number, type: 'money' | 'k' | 'number') => {
+    if (type === 'money') {
+      if (num > 1000000) return `$${(num / 1000000).toFixed(1)}M`;
+      if (num > 1000) return `$${(num / 1000).toFixed(0)}K`;
+      return `$${num.toLocaleString('es-CO')}`;
+    }
+    if (type === 'k') {
+      if (num > 1000) return `${(num / 1000).toFixed(0)}K+`;
+      return num.toLocaleString('es-CO');
+    }
+    return num.toLocaleString('es-CO');
+  };
+
   return (
     <section className="relative min-h-screen bg-black overflow-hidden">
       {/* Background Image */}
@@ -49,18 +119,24 @@ export function HeroSection() {
             </Button>
           </div>
 
-          {/* Stats */}
+          {/* --- ¡STATS DINÁMICOS AQUÍ! --- */}
           <div className="flex flex-wrap gap-8 pt-8 border-t border-white/10">
             <div>
-              <div className="text-red-600 mb-1">1,234</div>
+              <div className="text-red-600 mb-1 text-2xl font-bold">
+                {formatStat(stats.activeAuctions, 'number')}
+              </div>
               <div className="text-white/60 text-sm">Subastas Activas</div>
             </div>
             <div>
-              <div className="text-red-600 mb-1">45K+</div>
-              <div className="text-white/60 text-sm">Usuarios Activos</div>
+              <div className="text-red-600 mb-1 text-2xl font-bold">
+                {formatStat(stats.activeUsers, 'k')}
+              </div>
+              <div className="text-white/60 text-sm">Usuarios Registrados</div>
             </div>
             <div>
-              <div className="text-red-600 mb-1">$2.5M</div>
+              <div className="text-red-600 mb-1 text-2xl font-bold">
+                {formatStat(stats.soldThisMonth, 'money')}
+              </div>
               <div className="text-white/60 text-sm">Vendido este mes</div>
             </div>
           </div>
