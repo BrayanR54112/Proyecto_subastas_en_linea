@@ -18,16 +18,16 @@ const teamMembers = [
   {
     id: '2',
     name: 'Michael',
-    position: 'Diseñador UI/UX',
+    position: 'Gerente del Proyecto',
     image: 'https://placehold.co/400x400/3b82f6/white?text=M', // Placeholder
-    bio: 'Enfocado en diseñar interfaces intuitivas y atractivas para el usuario.'
+    bio: 'Asegurando que el proyecto cumpla con las metas y la visión del equipo.'
   },
   {
     id: '3',
     name: 'Sara',
-    position: 'Gerente de Proyecto',
+    position: 'Diseñador UI/UX',
     image: 'https://placehold.co/400x400/22c55e/white?text=S', // Placeholder
-    bio: 'Asegurando que el proyecto cumpla con las metas y la visión del equipo.'
+    bio: 'Enfocado en diseñar interfaces intuitivas y atractivas para el usuario.'
   }
 ];
 
