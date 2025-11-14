@@ -1,24 +1,63 @@
-import React from 'react';
-// --- ¡CAMBIO AQUÍ! ---
-// Ya no necesitamos mockProducts, importamos el componente real
-import { LiveAuctions } from '../LiveAuctions';
-import { categories } from '../../lib/mockData';
+import React, { useState, useEffect } from 'react'; // ¡Importamos hooks!
+import { categories as staticCategories } from '../../lib/mockData'; // Renombramos
 import { AuctionCard } from '../AuctionCard';
 import { TrendingUp, Clock, DollarSign, Users } from 'lucide-react';
+// --- ¡Importamos Firebase! ---
+import { db } from '../../lib/firebaseConfig';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+// --- ¡Importamos el componente real de subastas! ---
+import { LiveAuctions } from '../LiveAuctions';
 
 interface DashboardMainProps {
   onViewLive: (auctionId: string) => void;
 }
 
 export function DashboardMain({ onViewLive }: DashboardMainProps) {
-  // const liveAuctions = mockProducts.filter(p => p.isLive); // <-- Eliminamos esto
-  
+  // const liveAuctions = mockProducts.filter(p => p.isLive); // <-- Ya no usamos mocks
+
+  // --- ¡NUEVO ESTADO! ---
+  // Un objeto para guardar los conteos: { watches: 10, art: 5, ... }
+  const [categoryCounts, setCategoryCounts] = useState<{ [key: string]: number }>({});
+
   const stats = [
     { icon: TrendingUp, label: 'Ofertas Activas', value: '3', color: 'text-green-500' },
     { icon: Clock, label: 'Subastas Observando', value: '12', color: 'text-blue-500' },
     { icon: DollarSign, label: 'Total Invertido', value: '$24.5K', color: 'text-yellow-500' },
     { icon: Users, label: 'Subastas Ganadas', value: '8', color: 'text-purple-500' }
   ];
+
+  // --- ¡NUEVO USEEFFECT! ---
+  // Este hook "escuchará" la base de datos y contará las categorías
+  useEffect(() => {
+    // Apuntamos a la colección 'subastas'
+    const auctionsRef = collection(db, 'subastas');
+    // (Opcional: si solo quieres contar las activas)
+    // const q = query(auctionsRef, where("status", "==", "active"));
+
+    // onSnapshot se actualiza en tiempo real
+    const unsubscribe = onSnapshot(auctionsRef, (snapshot) => {
+      const counts: { [key: string]: number } = {};
+
+      // Recorremos cada documento de subasta
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const category = data.category; // Ej: "watches", "art", ...
+
+        if (category) {
+          // Si la categoría ya existe en nuestro conteo, le sumamos 1
+          // Si no, la inicializamos en 1
+          counts[category] = (counts[category] || 0) + 1;
+        }
+      });
+      
+      // Guardamos el objeto de conteos en el estado
+      setCategoryCounts(counts);
+    });
+
+    // Limpiamos el "listener" cuando el componente se desmonta
+    return () => unsubscribe();
+  }, []); // El array vacío [] significa que esto se ejecuta 1 sola vez
+
 
   return (
     <div className="space-y-8">
@@ -44,27 +83,26 @@ export function DashboardMain({ onViewLive }: DashboardMainProps) {
       <div>
         <h3 className="text-white mb-6">Categorías</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-          {categories.map((category) => (
+          {/* Usamos el array estático para los nombres e iconos */}
+          {staticCategories.map((category) => (
             <button
               key={category.id}
               className="bg-zinc-900 border border-white/5 rounded-xl p-4 hover:border-red-600/50 transition-all group"
             >
               <div className="text-3xl mb-2">{category.icon}</div>
               <p className="text-white text-sm mb-1">{category.name}</p>
-              <p className="text-white/40 text-xs">{category.count}</p>
+              
+              {/* --- ¡AQUÍ ESTÁ EL CAMBIO! --- */}
+              {/* Mostramos el conteo REAL desde nuestro estado */}
+              <p className="text-white/40 text-xs">
+                {categoryCounts[category.id] || 0}
+              </p>
             </button>
           ))}
         </div>
       </div>
 
-      {/* --- ¡SECCIÓN PRINCIPAL ACTUALIZADA! --- */}
-      {/* Ahora, en lugar de que DashboardMain cree su propia lista "mock",
-        simplemente le decimos al componente 'LiveAuctions' (que ya está
-        conectado a Firebase) que se renderice aquí.
-        
-        Le pasamos la función 'onViewLive' (que viene de App.tsx) 
-        a la prop 'onViewAuction' (que 'LiveAuctions' espera).
-      */}
+      {/* Live Auctions */}
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -77,16 +115,14 @@ export function DashboardMain({ onViewLive }: DashboardMainProps) {
           </div>
         </div>
         
-        {/* Aquí renderizamos el componente REAL conectado a Firebase */}
+        {/* --- ¡CAMBIO IMPORTANTE! --- */}
+        {/* Renderizamos el componente que SÍ está conectado a Firebase */}
         <LiveAuctions onViewAuction={onViewLive} />
+        
+        {/* (Eliminamos el .map() que usaba mockProducts) */}
       </div>
 
-      {/* He eliminado la sección "All Auctions" que tenías 
-        porque usaba mockProducts. Si quieres tener "Todas las subastas" 
-        (no solo las activas), deberíamos modificar la consulta 
-        de Firebase dentro de 'LiveAuctions.tsx' y pasarle un filtro.
-        Por ahora, esto te deja 100% funcional con datos en vivo.
-      */}
+      {/* All Auctions (Eliminado porque usaba mocks) */}
     </div>
   );
 }
