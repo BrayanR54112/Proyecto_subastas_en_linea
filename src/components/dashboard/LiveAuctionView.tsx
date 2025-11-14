@@ -407,10 +407,10 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
                 +$5,000
               </Button>
               <Button
-                onClick={() => setBidAmount((product.currentBid + 10000).toString())}
+                onClick={() => setBidAmount((product.currentBid + 9000).toString())}
                 className="flex-1 border border-white/10 text-white hover:bg-white/5 text-sm bg-black/50"
               >
-                +$10.000
+                +$9.000
               </Button>
             </div>
             {/* --- FIN DE LA SECCIÓN CORREGIDA --- */}
