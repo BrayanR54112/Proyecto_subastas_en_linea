@@ -393,24 +393,24 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
             {/* --- ¡SECCIÓN CORREGIDA! --- */}
             <div className="flex gap-2">
               <Button
-                onClick={() => setBidAmount((product.currentBid + 10000).toString())}
+                onClick={() => setBidAmount((product.currentBid + 1000).toString())}
                 // 1. Quitamos variant="outline"
                 // 2. Añadimos un fondo oscuro y nos aseguramos de que el 'border' exista
                 className="flex-1 border border-white/10 text-white hover:bg-white/5 text-sm bg-black/50"
               >
+                +$1.000
+              </Button>
+              <Button
+                onClick={() => setBidAmount((product.currentBid + 5000).toString())}
+                className="flex-1 border border-white/10 text-white hover:bg-white/5 text-sm bg-black/50"
+              >
+                +$5,000
+              </Button>
+              <Button
+                onClick={() => setBidAmount((product.currentBid + 10000).toString())}
+                className="flex-1 border border-white/10 text-white hover:bg-white/5 text-sm bg-black/50"
+              >
                 +$10.000
-              </Button>
-              <Button
-                onClick={() => setBidAmount((product.currentBid + 50000).toString())}
-                className="flex-1 border border-white/10 text-white hover:bg-white/5 text-sm bg-black/50"
-              >
-                +$50,000
-              </Button>
-              <Button
-                onClick={() => setBidAmount((product.currentBid + 90000).toString())}
-                className="flex-1 border border-white/10 text-white hover:bg-white/5 text-sm bg-black/50"
-              >
-                +$90.000
               </Button>
             </div>
             {/* --- FIN DE LA SECCIÓN CORREGIDA --- */}
