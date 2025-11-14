@@ -91,16 +91,15 @@ export function LiveAuctions({ onViewAuction }: { onViewAuction: (id: string) =>
   return (
     <section className="bg-black py-20">
       <div className="container mx-auto px-4 lg:px-8">
-        {/* Tu cabecera de sección (la he quitado para brevedad, pero la tuya está bien) */}
-        
+
         {/* Tabs */}
         <Tabs defaultValue="all" className="mb-8">
           <TabsList className="bg-white/5 border border-white/10">
-            <TabsTrigger value="all">Todas</TabsTrigger>
-            <TabsTrigger value="watches">Relojes</TabsTrigger>
-            <TabsTrigger value="vehicles">Vehículos</TabsTrigger>
-            <TabsTrigger value="art">Arte</TabsTrigger>
-            <TabsTrigger value="collectibles">Coleccionables</TabsTrigger>
+            <TabsTrigger value="all" className="text-white/60 data-[state=active]:text-black">Todas</TabsTrigger>
+            <TabsTrigger value="watches" className="text-white/60 data-[state=active]:text-black">Relojes</TabsTrigger>
+            <TabsTrigger value="vehicles" className="text-white/60 data-[state=active]:text-black">Vehículos</TabsTrigger>
+            <TabsTrigger value="art" className="text-white/60 data-[state=active]:text-black">Arte</TabsTrigger>
+            <TabsTrigger value="collectibles" className="text-white/60 data-[state=active]:text-black">Coleccionables</TabsTrigger>
           </TabsList>
 
           {/* --- CONTENIDO DE TABS (AHORA DINÁMICO) --- */}
@@ -150,7 +149,6 @@ export function LiveAuctions({ onViewAuction }: { onViewAuction: (id: string) =>
           </TabsContent>
         </Tabs>
 
-        {/* ... tu botón móvil ... */}
       </div>
     </section>
   );
