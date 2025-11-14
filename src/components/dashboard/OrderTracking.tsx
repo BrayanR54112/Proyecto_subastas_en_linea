@@ -1,9 +1,40 @@
 import { Package, Truck, CheckCircle, MapPin, Clock } from 'lucide-react';
-import { mockShippingStatus } from '../../lib/mockData';
+// 1. Quitamos 'mockShippingStatus' de la importación
+import { type ShippingStatus } from '../../lib/mockData'; // Importamos solo el TIPO
 import { Badge } from '../ui/badge';
 
+// --- ¡NUEVOS DATOS QUEMADOS DE MEDELLÍN! ---
+const medellinShippingStatus: ShippingStatus = {
+  productId: 'macbook-demo-123',
+  status: 'shipped', // Puedes cambiar esto a 'packed' o 'delivered' para probar
+  trackingNumber: 'SERVI123456COL',
+  estimatedDelivery: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Mañana
+  updates: [
+    {
+      status: 'Empacado',
+      location: 'Bodega Central - Bogotá, Cundinamarca',
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // Hace 2 días
+    },
+    {
+      status: 'En tránsito',
+      location: 'Centro de distribución - Itagüí, Antioquia',
+      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) // Hace 1 día
+    },
+    {
+      status: 'En ruta de entrega',
+      location: 'Medellín, Antioquia',
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) // Hace 2 horas
+    }
+  ],
+  // (Faltaban estas propiedades en el mock original, las añado)
+  createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+  endTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // Asumimos que la subasta terminó hace 3 días
+  // ... (y el resto de propiedades de Product que no son de ShippingStatus)
+} as any; // Usamos 'as any' aquí para evitar conflictos de tipo entre Product y ShippingStatus
+
 export function OrderTracking() {
-  const status = mockShippingStatus;
+  // 2. Usamos los nuevos datos locales en lugar de los importados
+  const status = medellinShippingStatus;
 
   const getStatusIcon = (s: string) => {
     if (s === 'packed') return Package;
@@ -33,8 +64,8 @@ export function OrderTracking() {
                 'bg-green-600'
               }`}>
                 {status.status === 'packed' ? 'Empacado' :
-                 status.status === 'shipped' ? 'En Tránsito' :
-                 'Entregado'}
+                  status.status === 'shipped' ? 'En Tránsito' :
+                  'Entregado'}
               </Badge>
             </div>
             <div className="text-right">
@@ -61,7 +92,7 @@ export function OrderTracking() {
 
             {/* Status Points */}
             <div className="space-y-8">
-              {status.updates.map((update, index) => {
+              {status.updates.map((update: any, index: number) => { // Añadido 'any' para compatibilidad
                 const isLatest = index === status.updates.length - 1;
                 return (
                   <div key={index} className="relative pl-12">
@@ -114,28 +145,28 @@ export function OrderTracking() {
         </div>
       </div>
 
-      {/* Delivery Info */}
+      {/* --- ¡SECCIÓN ACTUALIZADA A MEDELLÍN! --- */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-zinc-900 border border-white/5 rounded-xl p-6">
           <h4 className="text-white mb-4">Dirección de Entrega</h4>
           <div className="space-y-2 text-sm">
-            <p className="text-white">María González</p>
-            <p className="text-white/60">Av. Paseo de la Reforma 505</p>
-            <p className="text-white/60">Cuauhtémoc, CDMX 06500</p>
-            <p className="text-white/60">México</p>
-            <p className="text-white/60">Tel: +52 55 1234 5678</p>
+            <p className="text-white">Brayan Rivera (Tú)</p>
+            <p className="text-white/60">Calle 10 # 43A - 30</p>
+            <p className="text-white/60">El Poblado, Medellín, Antioquia</p>
+            <p className="text-white/60">Colombia</p>
+            <p className="text-white/60">Tel: +57 300 123 4567</p>
           </div>
         </div>
 
         <div className="bg-zinc-900 border border-white/5 rounded-xl p-6">
           <h4 className="text-white mb-4">Información del Vendedor</h4>
           <div className="space-y-2 text-sm">
-            <p className="text-white">Pedro Sánchez</p>
+            <p className="text-white">Vendido por: Sara (Equipo)</p>
             <div className="flex items-center gap-2">
               <span className="text-yellow-500">★</span>
-              <span className="text-white/60">4.8 (142 valoraciones)</span>
+              <span className="text-white/60">4.9 (102 valoraciones)</span>
             </div>
-            <p className="text-white/60">Envío desde: Guadalajara, Jalisco</p>
+            <p className="text-white/60">Envío desde: Bogotá, Cundinamarca</p>
             <p className="text-white/60">Método: Envío Express</p>
           </div>
         </div>
