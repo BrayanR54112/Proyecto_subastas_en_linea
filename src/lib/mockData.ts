@@ -81,7 +81,7 @@ export const categories = [
   { id: 'watches', name: 'Relojes', icon: '⌚', count: 234 },
   { id: 'vehicles', name: 'Vehículos', icon: '🚗', count: 156 },
   { id: 'art', name: 'Arte', icon: '🎨', count: 445 },
-  { id: 'collectibles', name: 'Coleccionables', icon: '💎', count: 678 },
+  { id: 'collectibles', name: 'Colección', icon: '💎', count: 678 },
   { id: 'jewelry', name: 'Joyería', icon: '💍', count: 289 },
   { id: 'electronics', name: 'Electrónica', icon: '📱', count: 523 },
   { id: 'fashion', name: 'Moda', icon: '👗', count: 392 },
