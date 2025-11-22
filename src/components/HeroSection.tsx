@@ -3,17 +3,21 @@ import { Play } from 'lucide-react';
 import { Button } from './ui/button';
 import { db, auth } from '../lib/firebaseConfig'; 
 import { collection, query, where, onSnapshot, Timestamp } from 'firebase/firestore';
-import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Para contar usuarios
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 
-export function HeroSection() {
-  // ESTADO PARA STATS DINÁMICOS
+// --- ¡AÑADIMOS LA INTERFAZ DE PROPS! ---
+interface HeroSectionProps {
+  onExplore: () => void;
+}
+
+// --- Recibimos la prop aquí ---
+export function HeroSection({ onExplore }: HeroSectionProps) {
   const [stats, setStats] = useState({
     activeAuctions: 0,
     activeUsers: 0,
     soldThisMonth: 0,
   });
 
-  // usereffect para cargar los stats dinámicos desde Firestore
   useEffect(() => {
     // 1. Contar Subastas Activas
     const auctionsRef = collection(db, 'subastas');
@@ -22,13 +26,13 @@ export function HeroSection() {
       setStats(prev => ({ ...prev, activeAuctions: snapshot.size }));
     });
 
-    // 2. Contar Usuarios Registrados (desde la colección 'users' en Firestore)
+    // 2. Contar Usuarios Registrados
     const usersRef = collection(db, 'users');
     const unsubUsers = onSnapshot(usersRef, (snapshot) => {
       setStats(prev => ({ ...prev, activeUsers: snapshot.size }));
     });
 
-    // 3. Contar Vendido este mes
+    // 3. Contar "Vendido este mes"
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyDaysAgoTimestamp = Timestamp.fromDate(thirtyDaysAgo);
@@ -36,30 +40,26 @@ export function HeroSection() {
     const soldQuery = query(
       collection(db, 'subastas'),
       where("status", "==", "ended"),
-      where("endTime", ">=", thirtyDaysAgoTimestamp) // endTime debe ser mayor o igual a hace 30 días
+      where("endTime", ">=", thirtyDaysAgoTimestamp)
     );
 
     const unsubSold = onSnapshot(soldQuery, (snapshot) => {
       let total = 0;
       snapshot.forEach((doc) => {
-        total += doc.data().currentBid; // Sumamos la puja final
+        total += doc.data().currentBid;
       });
       setStats(prev => ({ ...prev, soldThisMonth: total }));
     }, (error) => {
-      // Esta consulta podría fallar si necesita un índice compuesto.
-      // Si falla, la consola de Firebase te dará un link para crearlo con un clic.
-      console.error("Error al cargar 'Vendido este mes'. Revisa si necesitas un índice compuesto en Firestore.", error);
+      console.error("Error al cargar 'Vendido este mes'.", error);
     });
 
-    // Limpiamos los 3 listeners al salir
     return () => {
       unsubActive();
       unsubUsers();
       unsubSold();
     };
-  }, []); // El array vacío [] significa que esto se ejecuta 1 sola vez
+  }, []); 
 
-  // --- Función para formatear los números ---
   const formatStat = (num: number, type: 'money' | 'k' | 'number') => {
     if (type === 'money') {
       if (num > 1000000) return `$${(num / 1000000).toFixed(1)}M`;
@@ -110,16 +110,21 @@ export function HeroSection() {
           </p>
 
           <div className="flex flex-wrap gap-4 mb-12">
-            <Button className="bg-red-600 hover:bg-red-700 px-8 py-6">
+            {/* --- ¡BOTÓN CONECTADO! --- */}
+            <Button 
+              onClick={onExplore} // <-- Aquí está la magia
+              className="bg-red-600 hover:bg-red-700 px-8 py-6"
+            >
               Explorar Subastas
             </Button>
+            
             <Button variant="outline" className="bg-white text-black border-white hover:bg-black hover:text-white hover:border-black transition-all duration-300 px-8 py-6">
               <Play className="w-4 h-4 mr-2" />
               Ver Tutorial
             </Button>
           </div>
 
-          {/* --- ¡STATS DINÁMICOS AQUÍ! --- */}
+          {/* Stats Dinámicos */}
           <div className="flex flex-wrap gap-8 pt-8 border-t border-white/10">
             <div>
               <div className="text-red-600 mb-1 text-2xl font-bold">

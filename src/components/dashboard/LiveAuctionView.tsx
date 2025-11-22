@@ -146,8 +146,6 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
     }
   };
 
-  // --- ¡AQUÍ ESTÁ LA FUNCIÓN QUE FALTABA! ---
-  // Formatea los segundos del estado local 'timeLeft' para mostrarlos en el reloj
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -162,8 +160,10 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
   const totalDurationInSeconds = (product.endTime.getTime() - product.createdAt.getTime()) / 1000;
   const timePercentage = (timeLeft / totalDurationInSeconds) * 100;
 
+  // --- LÓGICA DE GANADOR Y VENDEDOR ---
   const winnerName = product.lastBidderName || "Nadie";
   const isWinner = product.lastBidderId === user?.id;
+  const isSeller = product.sellerId === user?.id; // <--- ¡NUEVA LÓGICA!
 
   if (isEnded) {
     return (
@@ -174,16 +174,23 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
           </div>
           <h3 className="text-white mb-4">¡Subasta Finalizada!</h3>
           <p className="text-white/60 mb-2">Oferta ganadora: ${product.currentBid.toLocaleString()}</p>
+          
           <p className="text-white text-xl font-bold mb-8">
             Ganador: <span className="text-red-500">{isWinner ? "¡Tú!" : winnerName}</span>
           </p>
           
-          {isWinner ? (
+          {/* --- ¡CONDICIONAL ACTUALIZADO! --- */}
+          {/* Si eres el Ganador O el Vendedor, puedes chatear */}
+          {isWinner || isSeller ? (
             <div>
-              <p className="text-green-500 mb-6">¡Felicidades! Ganaste esta subasta</p>
+              <p className="text-green-500 mb-6">
+                {isWinner 
+                  ? "¡Felicidades! Ganaste esta subasta." 
+                  : "¡Tu producto se ha vendido con éxito!"}
+              </p>
               <Button onClick={onNavigateToChat} className="bg-red-600 hover:bg-red-700">
                 <MessageCircle className="w-4 h-4 mr-2" />
-                Chatear con el Vendedor
+                {isWinner ? "Chatear con el Vendedor" : "Chatear con el Ganador"}
               </Button>
             </div>
           ) : (
