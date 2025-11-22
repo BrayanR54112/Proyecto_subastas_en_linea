@@ -21,7 +21,7 @@ export function UploadProduct() {
     description: '',
     category: '',
     startingBid: '',
-    duration: '10', // ¡Por defecto en 10 minutos para tu demo!
+    duration: '10', 
     condition: 'new'
   });
 
@@ -57,7 +57,7 @@ export function UploadProduct() {
         bids: 0,
         status: 'active', 
         isLive: true,
-        endTime: Timestamp.fromDate(new Date(endTimeMs)), // Usamos el nuevo cálculo
+        endTime: Timestamp.fromDate(new Date(endTimeMs)), 
         createdAt: Timestamp.fromDate(new Date()),
       };
 
