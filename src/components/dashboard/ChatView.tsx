@@ -1,153 +1,126 @@
-import { useState } from 'react';
-import { Send, User, Image as ImageIcon, Paperclip } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Send } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { mockMessages } from '../../lib/mockData';
+import { db } from '../../lib/firebaseConfig';
+import { useAuth } from '../../lib/AuthContext';
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, Timestamp } from 'firebase/firestore';
 
-export function ChatView() {
-  const [messages, setMessages] = useState(mockMessages);
+interface ChatViewProps {
+  auctionId: string;
+}
+
+interface ChatMessage {
+  id: string;
+  text: string;
+  senderId: string;
+  senderName: string;
+  createdAt: Timestamp;
+}
+
+export function ChatView({ auctionId }: ChatViewProps) {
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = (e: React.FormEvent) => {
+  // --- 1. ESCUCHAR MENSAJES EN TIEMPO REAL ---
+  useEffect(() => {
+    if (!auctionId) return;
+
+    // Referencia a: subastas/{id}/messages
+    const messagesRef = collection(db, 'subastas', auctionId, 'messages');
+    const q = query(messagesRef, orderBy('createdAt', 'asc'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const msgs: ChatMessage[] = [];
+      snapshot.forEach((doc) => {
+        msgs.push({ id: doc.id, ...doc.data() } as ChatMessage);
+      });
+      setMessages(msgs);
+      // Scroll automático al último mensaje
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    });
+
+    return () => unsubscribe();
+  }, [auctionId]);
+
+  // --- 2. ENVIAR MENSAJE ---
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !user) return;
 
-    const message = {
-      id: Date.now().toString(),
-      senderId: '1',
-      senderName: 'María González',
-      message: newMessage,
-      timestamp: new Date()
-    };
-
-    setMessages([...messages, message]);
-    setNewMessage('');
-  };
-
-  const otherUser = {
-    name: 'Carlos Martínez',
-    rating: 4.9,
-    status: 'online'
+    try {
+      const messagesRef = collection(db, 'subastas', auctionId, 'messages');
+      await addDoc(messagesRef, {
+        text: newMessage,
+        senderId: user.id,
+        senderName: user.name,
+        createdAt: serverTimestamp()
+      });
+      setNewMessage('');
+    } catch (error) {
+      console.error("Error enviando mensaje:", error);
+    }
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="bg-zinc-900 border border-white/5 rounded-xl overflow-hidden flex flex-col h-[calc(100vh-12rem)]">
-        {/* Chat Header */}
-        <div className="p-6 border-b border-white/5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
-                </div>
-                {otherUser.status === 'online' && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-zinc-900" />
+    <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex flex-col bg-zinc-900 border border-white/5 rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="p-4 border-b border-white/10 bg-black/20">
+        <h3 className="text-white font-semibold flex items-center gap-2">
+          Chat de la Subasta
+          <span className="text-xs font-normal text-white/50">(ID: {auctionId.slice(0, 6)}...)</span>
+        </h3>
+      </div>
+
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && (
+          <p className="text-center text-white/40 mt-10">Inicia la conversación...</p>
+        )}
+        
+        {messages.map((msg) => {
+          const isMe = msg.senderId === user?.id;
+          return (
+            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] rounded-lg p-3 ${
+                isMe 
+                  ? 'bg-red-600 text-white rounded-tr-none' 
+                  : 'bg-zinc-800 text-white rounded-tl-none'
+              }`}>
+                {!isMe && (
+                  <p className="text-xs text-white/50 mb-1">{msg.senderName}</p>
                 )}
-              </div>
-              <div>
-                <h4 className="text-white">{otherUser.name}</h4>
-                <div className="flex items-center gap-2">
-                  <span className="text-yellow-500 text-sm">★</span>
-                  <span className="text-white/60 text-sm">{otherUser.rating}</span>
-                  <span className="text-white/40 text-sm">•</span>
-                  <span className="text-green-500 text-sm">{otherUser.status}</span>
-                </div>
+                <p className="text-sm">{msg.text}</p>
+                <p className="text-[10px] text-white/40 text-right mt-1">
+                  {msg.createdAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
               </div>
             </div>
-          </div>
-        </div>
+          );
+        })}
+        <div ref={messagesEndRef} />
+      </div>
 
-        {/* Product Context */}
-        <div className="p-4 bg-red-600/5 border-b border-white/5">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-zinc-800 rounded-lg flex-shrink-0">
-              <img
-                src="https://images.unsplash.com/photo-1670177257750-9b47927f68eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=200"
-                alt="Producto"
-                className="w-full h-full object-cover rounded-lg"
-              />
-            </div>
-            <div className="flex-1">
-              <p className="text-white text-sm mb-1">Chat sobre:</p>
-              <h4 className="text-white/90 text-sm">Reloj Rolex Submariner Vintage 1965</h4>
-            </div>
-            <div className="text-right">
-              <p className="text-white/50 text-xs mb-1">Precio final</p>
-              <p className="text-red-500">$12,500</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((message) => {
-            const isOwn = message.senderId === '1';
-            return (
-              <div
-                key={message.id}
-                className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`max-w-[70%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                  <div className="flex items-center gap-2">
-                    {!isOwn && (
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center flex-shrink-0">
-                        <User className="w-3 h-3 text-white" />
-                      </div>
-                    )}
-                    <span className="text-white/60 text-xs">{message.senderName}</span>
-                  </div>
-                  <div
-                    className={`rounded-2xl px-4 py-3 ${
-                      isOwn
-                        ? 'bg-red-600 text-white'
-                        : 'bg-zinc-800 text-white'
-                    }`}
-                  >
-                    <p className="text-sm">{message.message}</p>
-                  </div>
-                  <span className="text-white/40 text-xs">
-                    {message.timestamp.toLocaleTimeString('es-ES', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Input */}
-        <form onSubmit={handleSend} className="p-4 border-t border-white/5">
-          <div className="flex items-end gap-2">
-            <button
-              type="button"
-              className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/60"
-            >
-              <Paperclip className="w-5 h-5" />
-            </button>
-            <button
-              type="button"
-              className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/60"
-            >
-              <ImageIcon className="w-5 h-5" />
-            </button>
-            <Input
-              type="text"
-              placeholder="Escribe un mensaje..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              className="flex-1 bg-black/50 border-white/10 text-white"
-            />
-            <Button
-              type="submit"
-              disabled={!newMessage.trim()}
-              className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
+      {/* Input Area */}
+      <div className="p-4 border-t border-white/10 bg-black/20">
+        <form onSubmit={handleSendMessage} className="flex gap-2">
+          <Input
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Escribe un mensaje..."
+            className="bg-black/50 border-white/10 text-white"
+          />
+          <Button 
+            type="submit" 
+            disabled={!newMessage.trim()}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
         </form>
       </div>
     </div>

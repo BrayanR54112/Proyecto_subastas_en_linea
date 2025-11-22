@@ -230,8 +230,8 @@ export function UploadProduct() {
                 </SelectTrigger>
                 <SelectContent>
                   {/* --- ¡VALORES EN MINUTOS! --- */}
-                  <SelectItem value="5">5 minutos (Demo Rápida)</SelectItem>
-                  <SelectItem value="10">10 minutos (Demo)</SelectItem>
+                  <SelectItem value="5">5 minutos (Prueba)</SelectItem>
+                  <SelectItem value="10">10 minutos (Prueba)</SelectItem>
                   <SelectItem value="30">30 minutos</SelectItem>
                   <SelectItem value="60">1 hora</SelectItem>
                   <SelectItem value="360">6 horas</SelectItem>
