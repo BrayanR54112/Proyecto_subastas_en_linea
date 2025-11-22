@@ -25,10 +25,16 @@ export interface Product {
   createdAt: Date;
   sellerId: string;
   sellerName: string;
+  // --- ¡NUEVOS CAMPOS PARA EL GANADOR! ---
+  lastBidderId?: string;   // Opcional porque al inicio no hay nadie
+  lastBidderName?: string; // Opcional
+  // ---------------------------------------
   status: 'active' | 'upcoming' | 'ended';
   isLive?: boolean;
 }
 
+// ... (resto del archivo sin cambios) ...
+// (Mantenemos la interfaz ShippingStatus y Message, etc.)
 export interface Message {
   id: string;
   senderId: string;
@@ -81,7 +87,7 @@ export const categories = [
   { id: 'watches', name: 'Relojes', icon: '⌚', count: 234 },
   { id: 'vehicles', name: 'Vehículos', icon: '🚗', count: 156 },
   { id: 'art', name: 'Arte', icon: '🎨', count: 445 },
-  { id: 'collectibles', name: 'Colección', icon: '💎', count: 678 },
+  { id: 'collectibles', name: 'Coleccionables', icon: '💎', count: 678 },
   { id: 'jewelry', name: 'Joyería', icon: '💍', count: 289 },
   { id: 'electronics', name: 'Electrónica', icon: '📱', count: 523 },
   { id: 'fashion', name: 'Moda', icon: '👗', count: 392 },

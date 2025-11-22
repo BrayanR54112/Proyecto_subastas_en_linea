@@ -14,12 +14,12 @@ interface AuctionCardProps {
   category: string;
   featured?: boolean;
   isLive?: boolean;
-  // --- ¡CAMBIO 1: El nombre y tipo de la prop! ---
+  
   onViewAuction: (id: string) => void;
 }
 
 export function AuctionCard({ 
-  id, // <-- Necesitamos el ID
+  id, 
   title, 
   image, 
   currentBid, 
@@ -29,16 +29,14 @@ export function AuctionCard({
   category,
   featured = false,
   isLive = false,
-  onViewAuction // --- ¡CAMBIO 2: Recibimos la prop correcta! ---
+  onViewAuction 
 }: AuctionCardProps) {
   const percentIncrease = ((currentBid - startingBid) / startingBid * 100).toFixed(0);
 
   return (
-    // ¡OJO! He movido el onClick del botón a todo el div
-    // para que toda la tarjeta sea clickeable.
-    // Si prefieres que sea solo el botón, mueve el onClick de abajo al <Button>.
+
     <div 
-      onClick={() => onViewAuction(id)} // --- ¡CAMBIO 3: Llamamos a la función con el ID! ---
+      onClick={() => onViewAuction(id)}
       className="group relative bg-zinc-900 rounded-xl overflow-hidden border border-white/5 hover:border-red-600/50 transition-all duration-300 cursor-pointer"
     >
       {/* Image */}
@@ -105,10 +103,9 @@ export function AuctionCard({
           </div>
         </div>
 
-        {/* Action Button */}
-        {/* El botón ahora es solo visual, el 'onClick' está en el div principal */}
+        
         <Button 
-          tabIndex={-1} // Para que no sea "focuseable" si el div ya es clickeable
+          tabIndex={-1}
           className="w-full bg-red-600 hover:bg-red-700 pointer-events-none"
         >
           {isLive ? 'Ver Subasta en Vivo' : 'Hacer Oferta'}

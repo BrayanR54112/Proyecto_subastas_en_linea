@@ -16,7 +16,7 @@ import { DashboardMain } from './components/dashboard/DashboardMain';
 import { UploadProduct } from './components/dashboard/UploadProduct';
 import { UserProfile } from './components/dashboard/UserProfile';
 import { LiveAuctionView } from './components/dashboard/LiveAuctionView';
-import { ChatView } from './components/dashboard/ChatView';
+import { ChatView } from './components/dashboard/ChatView'; 
 import { OrderTracking } from './components/dashboard/OrderTracking';
 import { HeatMap } from './components/dashboard/HeatMap';
 
@@ -37,14 +37,11 @@ function AppContent() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // --- FUNCIÓN PARA USUARIOS AUTENTICADOS ---
   const handleViewAuction = (auctionId: string) => {
     setSelectedAuctionId(auctionId);
     setDashboardView('buy'); 
   };
 
-  // --- ¡NUEVA FUNCIÓN! ---
-  // Para usuarios PÚBLICOS. Si hacen clic en una subasta, los mandamos al login.
   const handlePublicViewAuction = () => {
     setCurrentPage('login');
   };
@@ -68,14 +65,9 @@ function AppContent() {
     return (
       <div className="min-h-screen bg-black">
         <PublicHeader onNavigate={setCurrentPage} currentPage={currentPage} />
-        
-        {/* --- ¡AQUÍ ESTÁ LA LÍNEA QUE ARREGLA EL ERROR! --- */}
-        {/* Le pasamos la nueva función 'handlePublicViewAuction' a HomePage */}
         {currentPage === 'home' && <HomePage onViewAuction={handlePublicViewAuction} />}
-        
         {currentPage === 'about' && <AboutPage />}
         {currentPage === 'contact' && <ContactPage />}
-        
         <Footer />
       </div>
     );
@@ -97,12 +89,9 @@ function AppContent() {
       />
       
       <main className="ml-0 lg:ml-64 pt-24 pb-12 px-4 lg:px-8">
-        {/* --- ¡LÓGICA ACTUALIZADA AQUÍ! --- */}
-        
         {dashboardView === 'dashboard' && <DashboardMain onViewLive={handleViewAuction} />}
         {dashboardView === 'upload' && <UploadProduct />}
         
-        {/* Solo mostramos LiveAuctionView SI tenemos un ID seleccionado */}
         {dashboardView === 'buy' && selectedAuctionId && (
           <LiveAuctionView 
             auctionId={selectedAuctionId}
@@ -113,7 +102,11 @@ function AppContent() {
         {dashboardView === 'browse' && <DashboardMain onViewLive={handleViewAuction} />}
         {dashboardView === 'profile' && <UserProfile />}
         {dashboardView === 'orders' && <OrderTracking />}
-        {dashboardView === 'chat' && <ChatView />}
+      
+        {dashboardView === 'chat' && selectedAuctionId && (
+          <ChatView auctionId={selectedAuctionId} />
+        )}
+        
         {dashboardView === 'heatmap' && <HeatMap />}
       </main>
     </div>
