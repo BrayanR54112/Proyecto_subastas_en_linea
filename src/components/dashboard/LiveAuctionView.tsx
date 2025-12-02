@@ -163,7 +163,7 @@ export function LiveAuctionView({ auctionId, onNavigateToChat }: { auctionId: st
   // --- LÓGICA DE GANADOR Y VENDEDOR ---
   const winnerName = product.lastBidderName || "Nadie";
   const isWinner = product.lastBidderId === user?.id;
-  const isSeller = product.sellerId === user?.id; // <--- ¡NUEVA LÓGICA!
+  const isSeller = product.sellerId === user?.id; 
 
   if (isEnded) {
     return (

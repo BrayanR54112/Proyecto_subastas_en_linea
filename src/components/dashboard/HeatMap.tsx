@@ -2,9 +2,8 @@ import { mockHeatMapData } from '../../lib/mockData';
 import { TrendingUp, MapPin, DollarSign } from 'lucide-react';
 
 export function HeatMap() {
-  // Normalize data for visualization
+
   const maxSales = Math.max(...mockHeatMapData.map(d => d.sales));
-  
   return (
     <div className="space-y-8">
       <div>
@@ -21,14 +20,11 @@ export function HeatMap() {
             alt="Map"
             className="w-full h-full object-cover opacity-20"
           />
-          
           {/* Heat points overlay */}
           <div className="absolute inset-0 p-8">
             {mockHeatMapData.map((data, index) => {
               const intensity = (data.sales / maxSales);
               const size = 40 + (intensity * 80);
-              
-              // Position points in different areas of the map
               const positions = [
                 { top: '30%', left: '45%' }, // CDMX
                 { top: '25%', left: '35%' }, // Guadalajara

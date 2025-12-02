@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'; // ¡Importante!
 import { Star, Package, Clock, Award, Edit } from 'lucide-react';
 import { useAuth } from '../../lib/AuthContext';
-// --- 1. Importamos Firebase ---
 import { db } from '../../lib/firebaseConfig';
 import { collection, query, where, onSnapshot, Timestamp } from 'firebase/firestore';
 import { Product } from '../../lib/mockData'; // Importamos el TIPO, no los datos
-// --- (Quitamos 'mockProducts') ---
 import { Button } from '../ui/button';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 
@@ -21,19 +19,19 @@ const formatTimeLeft = (endTime: Date): string => {
 };
 
 export function UserProfile() {
-  const { user } = useAuth(); // ¡Esto está perfecto!
+  const { user } = useAuth(); 
 
-  // --- 2. Creamos estados separados para los productos ---
+  //  estados separados para los productos 
   const [activeProducts, setActiveProducts] = useState<Product[]>([]);
   const [upcomingProducts, setUpcomingProducts] = useState<Product[]>([]);
 
-  // --- 3. useEffect para cargar los productos del usuario ---
+  // useEffect para cargar los productos del usuario ---
   useEffect(() => {
     // Si no hay usuario, no hay nada que cargar
     if (!user) return;
 
     // Creamos una consulta a Firestore:
-    // "Dame todas las subastas donde el 'sellerId' sea igual al ID del usuario actual"
+    // "subastas donde el 'sellerId' sea igual al ID del usuario actual"
     const auctionsRef = collection(db, 'subastas');
     const q = query(auctionsRef, where("sellerId", "==", user.id));
 
@@ -64,22 +62,21 @@ export function UserProfile() {
         });
       });
       
-      // --- ¡CAMBIO IMPORTANTE! ---
-      // Filtramos y actualizamos los estados separados
+    
       setActiveProducts(allProducts.filter(p => p.status === 'active'));
       setUpcomingProducts(allProducts.filter(p => p.status === 'upcoming'));
     });
 
-    // Limpiamos el listener al salir
+    
     return () => unsubscribe();
 
-  }, [user]); // Este efecto se ejecuta cada vez que el 'user' cambie
+  }, [user]); 
 
   if (!user) {
     return <div className="text-white">Cargando perfil...</div>
   }
 
-  // --- 4. Renderizado (sin cambios, ahora usa datos reales) ---
+  // Renderizado
   return (
     <div className="space-y-8">
       {/* Profile Header */}
@@ -87,8 +84,7 @@ export function UserProfile() {
         <div className="flex flex-col md:flex-row gap-6 items-start">
           <div className="w-32 h-32 rounded-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white flex-shrink-0">
             <span className="text-5xl">{user.name.charAt(0)}</span>
-          </div>
-          
+          </div>          
           <div className="flex-1">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -100,7 +96,6 @@ export function UserProfile() {
                 Editar Perfil
               </Button>
             </div>
-
             {/* Rating */}
             <div className="flex items-center gap-2 mb-6">
               <div className="flex items-center gap-1">
@@ -117,16 +112,13 @@ export function UserProfile() {
               </div>
               <span className="text-white">{user.rating}</span>
               <span className="text-white/40">({user.totalAuctions} valoraciones)</span>
-            </div>
-
-            {/* Stats (AHORA USANDO LOS NUEVOS ESTADOS) */}
+            </div>          
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-black/50 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Package className="w-4 h-4 text-red-600" />
                   <span className="text-white/60 text-sm">Subastas Activas</span>
-                </div>
-                {/* Usamos el length del array real */}
+                </div>            
                 <div className="text-white">{activeProducts.length}</div>
               </div>
               <div className="bg-black/50 rounded-lg p-4">
@@ -147,8 +139,6 @@ export function UserProfile() {
           </div>
         </div>
       </div>
-
-      {/* Active Auctions (AHORA USANDO 'activeProducts') */}
       <div>
         <h3 className="text-white mb-6">Productos que Estoy Subastando</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -176,8 +166,6 @@ export function UserProfile() {
           ))}
         </div>
       </div>
-      
-      {/* Upcoming Auctions (AHORA USANDO 'upcomingProducts') */}
       <div>
         <h3 className="text-white mb-6">Próximas Subastas</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -207,7 +195,6 @@ export function UserProfile() {
           ))}
         </div>
       </div>
-
     </div>
   );
 }

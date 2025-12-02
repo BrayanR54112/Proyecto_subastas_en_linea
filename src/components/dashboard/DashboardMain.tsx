@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'; 
 import { categories as staticCategories } from '../../lib/mockData';
-// import { AuctionCard } from '../AuctionCard'; // Ya no se usa aquí
 import { TrendingUp, Clock, DollarSign, Users } from 'lucide-react';
 import { db } from '../../lib/firebaseConfig';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
@@ -15,15 +14,15 @@ export function DashboardMain({ onViewLive }: DashboardMainProps) {
   const { user } = useAuth(); // Necesitamos al usuario actual
   const [categoryCounts, setCategoryCounts] = useState<{ [key: string]: number }>({});
 
-  // --- ¡NUEVO ESTADO PARA STATS DINÁMICOS! ---
+  
   const [dynamicStats, setDynamicStats] = useState({
     activeSales: 0,
-    watching: 12, // Este se queda quemado por ahora
+    watching: 12, 
     totalSpent: 0,
     auctionsWon: 0,
   });
 
-  // Este useEffect ya cuenta las categorías (¡perfecto!)
+  // Este useEffect cuenta las categorias en tiempo real
   useEffect(() => {
     const auctionsRef = collection(db, 'subastas');
     const unsubscribe = onSnapshot(auctionsRef, (snapshot) => {
@@ -40,7 +39,7 @@ export function DashboardMain({ onViewLive }: DashboardMainProps) {
     return () => unsubscribe();
   }, []); 
 
-  // --- ¡NUEVO USEEFFECT PARA LOS STATS! ---
+  // USERFFECT PARA LOS STATS
   useEffect(() => {
     if (!user) return; // Si no hay usuario, no hacemos nada
 
@@ -80,7 +79,7 @@ export function DashboardMain({ onViewLive }: DashboardMainProps) {
   }, [user]); // Se ejecuta cada vez que el usuario cambie
 
 
-  // --- ACTUALIZAMOS LOS STATS PARA USAR EL ESTADO DINÁMICO ---
+  //stats para cambio dinamico
   const stats = [
     { icon: TrendingUp, label: 'Ofertas Activas', value: dynamicStats.activeSales, color: 'text-green-500' },
     { icon: Clock, label: 'Subastas Observando', value: dynamicStats.watching, color: 'text-blue-500' },
@@ -121,9 +120,6 @@ export function DashboardMain({ onViewLive }: DashboardMainProps) {
               
               {/* Este es el ÍCONO */}
               <div className="text-3xl mb-2">{category.icon}</div>
-              
-              {/* --- ¡AQUÍ ESTÁ LA CORRECCIÓN! --- */}
-              {/* Añadimos 'break-words' para que el texto se parta si es muy largo */}
               <p className="text-white text-sm mb-1 break-words">
                 {category.name}
               </p>

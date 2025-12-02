@@ -1,39 +1,38 @@
 import { Package, Truck, CheckCircle, MapPin, Clock } from 'lucide-react';
-// 1. Quitamos 'mockShippingStatus' de la importación
-import { type ShippingStatus } from '../../lib/mockData'; // Importamos solo el TIPO
+import { type ShippingStatus } from '../../lib/mockData'; 
 import { Badge } from '../ui/badge';
 
-// --- ¡NUEVOS DATOS QUEMADOS DE MEDELLÍN! ---
+
 const medellinShippingStatus: ShippingStatus = {
   productId: 'macbook-demo-123',
-  status: 'shipped', // Puedes cambiar esto a 'packed' o 'delivered' para probar
+  status: 'shipped', 
   trackingNumber: 'SERVI123456COL',
-  estimatedDelivery: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Mañana
+  estimatedDelivery: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), 
   updates: [
     {
       status: 'Empacado',
       location: 'Bodega Central - Bogotá, Cundinamarca',
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // Hace 2 días
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) 
     },
     {
       status: 'En tránsito',
       location: 'Centro de distribución - Itagüí, Antioquia',
-      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) // Hace 1 día
+      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) 
     },
     {
       status: 'En ruta de entrega',
       location: 'Medellín, Antioquia',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) // Hace 2 horas
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000)
     }
   ],
-  // (Faltaban estas propiedades en el mock original, las añado)
+  
   createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-  endTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // Asumimos que la subasta terminó hace 3 días
-  // ... (y el resto de propiedades de Product que no son de ShippingStatus)
-} as any; // Usamos 'as any' aquí para evitar conflictos de tipo entre Product y ShippingStatus
+  endTime: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), 
+  
+} as any; 
 
 export function OrderTracking() {
-  // 2. Usamos los nuevos datos locales en lugar de los importados
+ 
   const status = medellinShippingStatus;
 
   const getStatusIcon = (s: string) => {
@@ -92,7 +91,7 @@ export function OrderTracking() {
 
             {/* Status Points */}
             <div className="space-y-8">
-              {status.updates.map((update: any, index: number) => { // Añadido 'any' para compatibilidad
+              {status.updates.map((update: any, index: number) => { 
                 const isLatest = index === status.updates.length - 1;
                 return (
                   <div key={index} className="relative pl-12">
@@ -144,8 +143,6 @@ export function OrderTracking() {
           </div>
         </div>
       </div>
-
-      {/* --- ¡SECCIÓN ACTUALIZADA A MEDELLÍN! --- */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-zinc-900 border border-white/5 rounded-xl p-6">
           <h4 className="text-white mb-4">Dirección de Entrega</h4>
