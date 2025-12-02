@@ -77,13 +77,6 @@ export function LiveAuctions({ onViewAuction }: { onViewAuction: (id: string) =>
       <div className="container mx-auto px-4 lg:px-8">
         <Tabs defaultValue="all" className="mb-8">
           <TabsList className="bg-white/5 border border-white/10">
-            {/* --- ¡CORRECCIÓN AQUÍ! --- 
-              Simplificamos las clases. 
-              Le damos un color base al texto (text-white/60).
-              Y cuando esté activo (data-[state=active]), el texto será negro.
-              El fondo blanco de la pestaña activa lo maneja TabsTrigger por defecto.
-              Nos aseguramos de que no haya un padding extra que oculte el texto.
-            */}
             <TabsTrigger value="all" className="text-white/60 data-[state=active]:text-black">Todas</TabsTrigger>
             <TabsTrigger value="watches" className="text-white/60 data-[state=active]:text-black">Relojes</TabsTrigger>
             <TabsTrigger value="vehicles" className="text-white/60 data-[state=active]:text-black">Vehículos</TabsTrigger>

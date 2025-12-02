@@ -5,12 +5,11 @@ import { db, auth } from '../lib/firebaseConfig';
 import { collection, query, where, onSnapshot, Timestamp } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 
-// --- ¡AÑADIMOS LA INTERFAZ DE PROPS! ---
 interface HeroSectionProps {
   onExplore: () => void;
 }
 
-// --- Recibimos la prop aquí ---
+
 export function HeroSection({ onExplore }: HeroSectionProps) {
   const [stats, setStats] = useState({
     activeAuctions: 0,
@@ -19,20 +18,20 @@ export function HeroSection({ onExplore }: HeroSectionProps) {
   });
 
   useEffect(() => {
-    // 1. Contar Subastas Activas
+    // Contar Subastas Activas
     const auctionsRef = collection(db, 'subastas');
     const activeQuery = query(auctionsRef, where("status", "==", "active"));
     const unsubActive = onSnapshot(activeQuery, (snapshot) => {
       setStats(prev => ({ ...prev, activeAuctions: snapshot.size }));
     });
 
-    // 2. Contar Usuarios Registrados
+    // Contar Usuarios Registrados
     const usersRef = collection(db, 'users');
     const unsubUsers = onSnapshot(usersRef, (snapshot) => {
       setStats(prev => ({ ...prev, activeUsers: snapshot.size }));
     });
 
-    // 3. Contar "Vendido este mes"
+    // Contar "Vendido este mes"
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyDaysAgoTimestamp = Timestamp.fromDate(thirtyDaysAgo);

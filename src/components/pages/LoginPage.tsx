@@ -24,7 +24,6 @@ export function LoginPage() {
         // El AuthContext se encargará de redirigir
       } else {
         await register(name, email, password);
-        // El AuthContext se encargará de redirigir
       }
     } catch (err: any) {
       // Manejo de errores de Firebase
